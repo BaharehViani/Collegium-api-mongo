@@ -32,6 +32,35 @@ async function registerUser(req, res) {
   }
 }
 
+async function loginUser(req, res) {
+  try {
+    const { username, password } = req.body;
+
+    // چک کردن ورودی‌ها
+    if (!username || !password) {
+      return res.status(400).json({ message: "Please fill all required fields" });
+    }
+
+    // پیدا کردن یوزر با یوزرنیم
+    const user = await User.findOne({ where: { username } });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // مقایسه پسورد وارد شده با پسورد هش شده
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // در صورت موفقیت
+    res.status(200).json({ message: "Login successful", user });
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 async function getAllUsers(req, res) {
   try {
     const users = await User.findAll();  // گرفتن همه یوزرها
@@ -109,5 +138,6 @@ module.exports = {
   getAllUsers,
   getUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  loginUser,
 };
