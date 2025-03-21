@@ -73,8 +73,8 @@ async function getAllUsers(req, res) {
 
 async function getUser(req, res) {
   try {
-    const { username } = req.params;  // گرفتن username از پارامترها
-    const user = await User.findOne({ where: { username } });  // پیدا کردن یوزر با username
+    const { id } = req.params; 
+    const user = await User.findByPk(id); 
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -89,11 +89,11 @@ async function getUser(req, res) {
 
 async function updateUser(req, res) {
   try {
-    const { username } = req.params;  // گرفتن username از پارامترها
-    const { full_name, password } = req.body;  // گرفتن داده‌های جدید از body
+    const { id } = req.params;  // گرفتن username از پارامترها
+    const { full_name, password, birth_date, phone_number } = req.body;  // گرفتن داده‌های جدید از body
 
     // چک کردن که یوزر وجود دارد یا خیر
-    const user = await User.findOne({ where: { username } });
+    const user = await User.findOne({ where: { id } });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -103,23 +103,23 @@ async function updateUser(req, res) {
       user.password = await bcrypt.hash(password, 10);
     }
 
-    user.full_name = full_name || user.full_name;  // اگر full_name داده شد، آن را به‌روزرسانی می‌کنیم
+    user.full_name = full_name || user.full_name;
+    user.birth_date = (birth_date !== undefined) ? birth_date : user.birth_date;
+    user.phone_number = (phone_number !== undefined) ? phone_number : user.phone_number;
 
     await user.save();  // ذخیره تغییرات در دیتابیس
 
     res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
     console.error("Error updating user:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
 async function deleteUser(req, res) {
   try {
-    const { username } = req.params;  // گرفتن username از پارامترها
-
-    const user = await User.findOne({ where: { username } });  // پیدا کردن یوزر با username
-
+    const { id } = req.params; 
+    const user = await User.findByPk(id); 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

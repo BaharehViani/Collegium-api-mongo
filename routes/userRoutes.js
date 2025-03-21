@@ -5,9 +5,9 @@ const { registerUser, getAllUsers, getUser, updateUser, deleteUser, loginUser } 
 
 router.post('/register', registerUser);
 router.get('/', getAllUsers);  // همه یوزرها
-router.get('/:username', getUser);  // یک یوزر خاص با username
-router.put('/:username', updateUser);  // ویرایش یوزر با username
-router.delete('/:username', deleteUser);  // حذف یوزر با username
+router.get('/:id', getUser);  // یک یوزر خاص با username
+router.put('/:id', updateUser);  // ویرایش یوزر با username
+router.delete('/:id', deleteUser);  // حذف یوزر با username
 router.post('/login', loginUser);
 
 module.exports = router;

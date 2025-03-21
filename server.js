@@ -6,12 +6,10 @@ const bodyParser = require('body-parser');
 const { sequelize } = require('./models/user'); // اتصال به دیتابیس (sequelize)
 const userRoutes = require('./routes/userRoutes'); // روت‌ها
 
-// ساخت یک اپلیکیشن Express
 const app = express();
-
-// استفاده از middleware‌ها
-app.use(cors());  // برای درخواست‌های CORS
-app.use(bodyParser.json());  // برای خواندن داده‌های JSON
+app.use(express.json())
+app.use(cors());  
+app.use(bodyParser.json()); 
 
 // تعریف روت‌ها
 app.use('/api/users', userRoutes);  // روت مربوط به کاربران

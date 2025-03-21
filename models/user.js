@@ -1,4 +1,4 @@
-require('dotenv').config();  // بارگذاری متغیرهای محیطی از فایل .env
+require('dotenv').config(); // بارگذاری متغیرهای محیطی از فایل .env
 const { Sequelize, DataTypes } = require('sequelize');
 const { ulid } = require('ulid');
 
@@ -33,6 +33,19 @@ const User = sequelize.define('User', {
   password: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  // فیلدهای جدید:
+  photo: {
+    type: DataTypes.STRING, 
+    allowNull: true        
+  },
+  birth_date: {
+    type: DataTypes.DATEONLY, 
+    allowNull: true           
+  },
+  phone_number: {
+    type: DataTypes.STRING, 
+    allowNull: true         
   }
 });
 
