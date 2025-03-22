@@ -89,25 +89,34 @@ async function getUser(req, res) {
 
 async function updateUser(req, res) {
   try {
-    const { id } = req.params;  // گرفتن username از پارامترها
-    const { full_name, password, birth_date, phone_number } = req.body;  // گرفتن داده‌های جدید از body
+    const { id } = req.params; 
+    const { full_name, username, password, photo, birth_date, phone_number } = req.body; 
 
-    // چک کردن که یوزر وجود دارد یا خیر
     const user = await User.findOne({ where: { id } });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // اگر پسورد داده شده بود، آن را هش کرده و بروزرسانی می‌کنیم
     if (password) {
-      user.password = await bcrypt.hash(password, 10);
+      user.password = await bcrypt.hash(password, 10); 
     }
-
-    user.full_name = full_name || user.full_name;
-    user.birth_date = (birth_date !== undefined) ? birth_date : user.birth_date;
-    user.phone_number = (phone_number !== undefined) ? phone_number : user.phone_number;
-
-    await user.save();  // ذخیره تغییرات در دیتابیس
+    if (full_name) {
+      user.full_name = full_name;
+    }
+    if (username) {
+      user.username = username;
+    }
+    if (birth_date !== undefined) {
+      user.birth_date = birth_date;
+    }
+    if (phone_number !== undefined) {
+      user.phone_number = phone_number;
+    }
+    if (photo) {
+      user.photo = photo;
+    }
+    
+    await user.save();
 
     res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {

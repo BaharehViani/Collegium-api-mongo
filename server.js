@@ -2,22 +2,20 @@ require('dotenv').config(); // بارگذاری متغیرهای محیطی از
 
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const { sequelize } = require('./models/user'); // اتصال به دیتابیس (sequelize)
 const userRoutes = require('./routes/userRoutes'); // روت‌ها
 
 const app = express();
-app.use(express.json())
-app.use(cors());  
-app.use(bodyParser.json()); 
+app.use(express.json({ limit: "1mb" })); // افزایش حجم مجاز درخواست‌ها
+app.use(express.urlencoded({ limit: "1mb", extended: true })); // برای فرم‌ها
+app.use(cors());
 
 // تعریف روت‌ها
-app.use('/api/users', userRoutes);  // روت مربوط به کاربران
+app.use('/api/users', userRoutes);  
 
 // بررسی اتصال به دیتابیس و راه‌اندازی سرور
-sequelize.sync() // اتصال به دیتابیس
+sequelize.sync()
   .then(() => {
-    // استفاده از متغیرهای محیطی برای پیکربندی سرور و اتصال به دیتابیس
     console.log("✅ Database connected!");
     app.listen(process.env.PORT, () => {
       console.log(`✅ Server is running on http://${process.env.DB_HOST}:${process.env.PORT}`);
@@ -25,7 +23,6 @@ sequelize.sync() // اتصال به دیتابیس
   })
   .catch(err => console.error('❌ Database connection failed:', err));
 
-
 app.get('/', (req, res) => {
   res.send('Hello, welcome to the Collegium API!');
-});  
+});
