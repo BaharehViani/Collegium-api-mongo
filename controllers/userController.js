@@ -1,4 +1,5 @@
 const { User } = require('../models/user');
+const { Course } = require('../models/course');
 const bcrypt = require('bcrypt');
 
 async function registerUser(req, res) {
@@ -135,6 +136,27 @@ async function deleteUser(req, res) {
   }
 }
 
+async function getCourse(req, res) {
+  try {
+    const { course_name } = req.params;
+    const course = await Course.findOne({where: { course_name: course_name } });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json({
+      course_name: course.course_name,
+      instructor_name: course.instructor_name,
+      first_class: course.first_class,
+      second_class: course.second_class,
+    });
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 module.exports = {
   registerUser,
   getAllUsers,
@@ -142,4 +164,5 @@ module.exports = {
   updateUser,
   deleteUser,
   loginUser,
+  getCourse,
 };
