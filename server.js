@@ -1,19 +1,19 @@
-require('dotenv').config(); // بارگذاری متغیرهای محیطی از فایل .env
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./models/user'); // اتصال به دیتابیس (sequelize)
-const userRoutes = require('./routes/userRoutes'); // روت‌ها
+const { sequelize } = require('./models/user');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
-app.use(express.json({ limit: "1mb" })); // افزایش حجم مجاز درخواست‌ها
-app.use(express.urlencoded({ limit: "1mb", extended: true })); // برای فرم‌ها
+app.use(express.json({ limit: "1mb" })); // increase request body limit
+app.use(express.urlencoded({ limit: "1mb", extended: true })); 
 app.use(cors());
 
-// تعریف روت‌ها
+// define routes
 app.use('/api/users', userRoutes);  
 
-// بررسی اتصال به دیتابیس و راه‌اندازی سرور
+// check database connection and start server
 sequelize.sync()
   .then(() => {
     console.log("✅ Database connected!");

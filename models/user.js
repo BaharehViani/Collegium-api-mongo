@@ -1,8 +1,8 @@
-require('dotenv').config(); // بارگذاری متغیرهای محیطی از فایل .env
+require('dotenv').config(); 
 const { Sequelize, DataTypes } = require('sequelize');
 const { ulid } = require('ulid');
 
-// اتصال به دیتابیس با استفاده از متغیرهای محیطی
+// Connect to database
 const sequelize = new Sequelize(
   process.env.DB_NAME,     
   process.env.DB_USER,     
@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
   }
 );
 
-// مدل User
+// User Model
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.STRING(26),
@@ -49,7 +49,6 @@ const User = sequelize.define('User', {
   }
 });
 
-// سینک کردن مدل با دیتابیس (ساخت جدول)
 sequelize.sync()
   .then(() => console.log('Database and tables created!'))
   .catch((error) => console.log('Error creating database:', error));
