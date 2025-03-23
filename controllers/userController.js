@@ -1,5 +1,4 @@
-const { User } = require('../models/user');
-const { Course } = require('../models/course');
+const { User, Course } = require('../models');
 const bcrypt = require('bcrypt');
 
 async function registerUser(req, res) {

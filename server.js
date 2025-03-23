@@ -2,9 +2,11 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./models/user');
+const sequelize = require('./config/database');
+const { User, Course } = require('./models');
 const userRoutes = require('./routes/userRoutes');
 
+// create express app
 const app = express();
 app.use(express.json({ limit: "1mb" })); // increase request body limit
 app.use(express.urlencoded({ limit: "1mb", extended: true })); 
