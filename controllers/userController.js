@@ -57,6 +57,16 @@ async function loginUser(req, res) {
 }
 
 async function getAllStudents(req, res) {
+  const { major } = req.query;
+
+  const whereClause = {
+    role: 'student'
+  };
+
+  if (major) {
+    whereClause.major = major;
+  }
+  
   try {
     const users = await User.findAll({ where: { role: "Student" } });
     res.status(200).json({ users });
@@ -161,6 +171,21 @@ async function getCourse(req, res) {
   }
 }
 
+async function getAllMajors(req, res) {
+  try {
+    const majors = await User.findAll({
+      attributes: ['major'],
+      group: ['major']
+    });
+
+    const majorList = majors.map(user => user.major);
+    res.status(200).json({ majors: majorList });
+  } catch (error) {
+    console.error("Error fetching majors:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 module.exports = {
   registerUser,
   getAllStudents,
@@ -169,4 +194,5 @@ module.exports = {
   deleteUser,
   loginUser,
   getCourse,
+  getAllMajors
 };
