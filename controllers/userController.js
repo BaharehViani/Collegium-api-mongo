@@ -68,7 +68,7 @@ async function getAllStudents(req, res) {
   }
   
   try {
-    const users = await User.findAll({ where: { role: "Student" } });
+    const users = await User.findAll({ where: { where: whereClause } });
     res.status(200).json({ users });
   } catch (error) {
     console.error("Error fetching users:", error);
