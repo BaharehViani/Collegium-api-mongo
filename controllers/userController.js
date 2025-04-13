@@ -56,9 +56,9 @@ async function loginUser(req, res) {
   }
 }
 
-async function getAllUsers(req, res) {
+async function getAllStudents(req, res) {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({ where: { role: "Student" } });
     res.status(200).json({ users });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -66,7 +66,7 @@ async function getAllUsers(req, res) {
   }
 }
 
-async function getUser(req, res) {
+async function getStudent(req, res) {
   try {
     const { id } = req.params; 
     const user = await User.findByPk(id); 
@@ -163,8 +163,8 @@ async function getCourse(req, res) {
 
 module.exports = {
   registerUser,
-  getAllUsers,
-  getUser,
+  getAllStudents,
+  getStudent,
   updateUser,
   deleteUser,
   loginUser,
