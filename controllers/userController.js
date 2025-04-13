@@ -3,9 +3,9 @@ const bcrypt = require('bcrypt');
 
 async function registerUser(req, res) {
   try {
-    const { full_name, username, password } = req.body;
+    const { full_name, username, major, password, role } = req.body;
 
-    if (!full_name || !username || !password) {
+    if (!full_name || !username || !password || !major) {
       return res.status(400).json({ message: "Please fill all required fields" });
     }
 
@@ -19,7 +19,9 @@ async function registerUser(req, res) {
     const newUser = await User.create({
       full_name,
       username,
-      password: hashedPassword
+      major,
+      password: hashedPassword,
+      role
     });
 
     res.status(201).json({ message: "User registered successfully", user: newUser });
@@ -83,7 +85,7 @@ async function getUser(req, res) {
 async function updateUser(req, res) {
   try {
     const { id } = req.params; 
-    const { full_name, username, password, photo, birth_date, phone_number } = req.body; 
+    const { full_name, username, major, password, photo, birth_date, phone_number } = req.body; 
 
     const user = await User.findOne({ where: { id } });
     if (!user) {
@@ -98,6 +100,9 @@ async function updateUser(req, res) {
     }
     if (username) {
       user.username = username;
+    }
+    if (major) {
+      user.major = major;
     }
     if (birth_date !== undefined) {
       user.birth_date = birth_date;
