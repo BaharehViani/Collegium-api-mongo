@@ -16,7 +16,7 @@ app.use(cors());
 app.use('/api/users', userRoutes);  
 
 // check database connection and start server
-sequelize.sync()
+sequelize.sync({ alter: true })
   .then(() => {
     console.log("✅ Database connected!");
     app.listen(process.env.PORT, () => {

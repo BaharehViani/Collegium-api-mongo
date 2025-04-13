@@ -23,7 +23,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  // فیلدهای جدید:
   photo: {
     type: DataTypes.TEXT,
     allowNull: true        
@@ -35,6 +34,14 @@ const User = sequelize.define('User', {
   phone_number: {
     type: DataTypes.STRING, 
     allowNull: true         
+  },
+  major: {
+    type: DataTypes.STRING,
+    allowNull: false 
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false
   }
 });
 

@@ -4,11 +4,11 @@ const { registerUser, getAllUsers, getUser, updateUser, deleteUser, loginUser, g
 
 
 router.post('/register', registerUser);
+router.post('/login', loginUser);
 router.get('/', getAllUsers);
 router.get('/:id', getUser);
+router.get('/course/:course_name', getCourse);
 router.patch('/:id', updateUser);
 router.delete('/:id', deleteUser);
-router.post('/login', loginUser);
-router.get('/course/:course_name', getCourse);
 
 module.exports = router;
