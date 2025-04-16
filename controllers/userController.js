@@ -57,18 +57,25 @@ async function loginUser(req, res) {
 }
 
 async function getAllStudents(req, res) {
-  const { major } = req.query;
+  const { major, orderBy } = req.query;
 
   const whereClause = {
     role: 'student'
   };
-
   if (major) {
     whereClause.major = major;
   }
   
+  const orderClause = [];
+  if (orderBy) {
+    orderClause.push([orderBy, "ASC"]);
+  }
+
   try {
-    const users = await User.findAll({ where: whereClause });
+    const users = await User.findAll({ 
+      where: whereClause, 
+      order: orderClause, 
+    });
     res.status(200).json({ users });
   } catch (error) {
     console.error("Error fetching users:", error);
