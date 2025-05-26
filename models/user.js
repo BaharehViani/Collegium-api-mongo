@@ -1,48 +1,43 @@
-const { DataTypes } = require('sequelize');
-const { ulid } = require('ulid');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-// User Model
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.STRING,
-    primaryKey: true,
-    allowNull: false,
-    defaultValue: () => ulid() 
-  },
+const userSchema = new mongoose.Schema({
   full_name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   username: {
-    type: DataTypes.BIGINT,
+    type: Number, // یا String، هر چی که میخوای
     unique: true,
-    allowNull: false
+    required: true,
   },
   password: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   photo: {
-    type: DataTypes.TEXT,
-    allowNull: true        
+    type: String,
+    default: null,
   },
   birth_date: {
-    type: DataTypes.DATEONLY, 
-    allowNull: true           
+    type: String,
+    default: null,
   },
   phone_number: {
-    type: DataTypes.STRING, 
-    allowNull: true         
+    type: String,
+    default: null,
   },
   major: {
-    type: DataTypes.STRING,
-    allowNull: false 
+    type: String,
+    required: true,
   },
   role: {
-    type: DataTypes.STRING,
-    allowNull: false
-  }
+    type: String,
+    required: true,
+  },
+}, {
+  timestamps: true,  // اگر دوست داری createdAt و updatedAt داشته باشی
 });
+
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

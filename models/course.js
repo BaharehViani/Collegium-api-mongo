@@ -1,31 +1,27 @@
-const { DataTypes } = require('sequelize');
-const { ulid } = require('ulid');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-// Course Model
-const Course = sequelize.define('Course', {
-  id: {
-    type: DataTypes.STRING(26),
-    primaryKey: true,
-    allowNull: false,
-    defaultValue: () => ulid()
-  },
+const courseSchema = new mongoose.Schema({
   course_name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   instructor_name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   first_class: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   second_class: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String,
+    required: false,
   }
+}, {
+  timestamps: true,  // اگر دوست داری createdAt و updatedAt داشته باشی
 });
+
+
+const Course = mongoose.model('Course', courseSchema);
 
 module.exports = Course;

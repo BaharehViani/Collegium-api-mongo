@@ -1,53 +1,37 @@
-const { DataTypes } = require('sequelize');
-const { ulid } = require('ulid');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-// User Model
-const Form = sequelize.define('Form', {
-  id: {
-    type: DataTypes.STRING(26),
-    primaryKey: true,
-    allowNull: false,
-    defaultValue: () => ulid() 
-  },
+const formSchema = new Schema({
   title: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   tracking_code: {
-    type: DataTypes.STRING,
+    type: String,
     unique: true,
-    allowNull: false
+    required: true,
   },
   type: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true,
   },
   status: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: true,
   },
   content: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true,
   },
   user_id: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    references: {
-      model: 'Users',
-      key: 'id'
-    },
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    type: Schema.Types.ObjectId,  // نوع ObjectId برای رفرنس به User
+    required: true,
+    ref: 'User',   // رفرنس به مدل User
   }
+}, {
+  timestamps: true,  // اگر دوست داری createdAt و updatedAt داشته باشی
 });
 
-Form.associate = (models) => {
-  Form.belongsTo(models.User, { 
-    foreignKey: 'user_id',
-    as: 'user'
-  });
-};
+const Form = mongoose.model('Form', formSchema);
 
 module.exports = Form;

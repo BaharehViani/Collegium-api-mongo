@@ -1,5 +1,6 @@
 const { User, Course, Form } = require('../models');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 
 function generateTrackingCode() {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -13,20 +14,22 @@ async function registerUser(req, res) {
       return res.status(400).json({ message: "Please fill all required fields" });
     }
 
-    const existingUser = await User.findOne({ where: { username } });
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ message: "This username already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const newUser = new User({
       full_name,
       username,
       major,
       password: hashedPassword,
       role
     });
+
+    await newUser.save();
 
     res.status(201).json({ message: "User registered successfully", user: newUser });
   } catch (error) {
@@ -43,7 +46,7 @@ async function loginUser(req, res) {
       return res.status(400).json({ message: "Please fill all required fields" });
     }
 
-    const user = await User.findOne({ where: { username } });
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -61,25 +64,23 @@ async function loginUser(req, res) {
 }
 
 async function getAllStudents(req, res) {
-  const { major, orderBy } = req.query;
-
-  const whereClause = {
-    role: 'student'
-  };
-  if (major) {
-    whereClause.major = major;
-  }
-  
-  const orderClause = [];
-  if (orderBy) {
-    orderClause.push([orderBy, "ASC"]);
-  }
-
   try {
-    const users = await User.findAll({ 
-      where: whereClause, 
-      order: orderClause, 
-    });
+    const { major, orderBy } = req.query;
+
+    const filter = { role: 'Student' };
+    if (major) {
+      filter.major = major;
+    }
+
+    let sort = {};
+    if (orderBy === "updatedAt") {
+      sort.updatedAt = -1; 
+    } else if (orderBy) {
+      sort[orderBy] = 1;
+    }
+    
+    const users = await User.find(filter).sort(sort);
+
     res.status(200).json({ users });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -89,8 +90,8 @@ async function getAllStudents(req, res) {
 
 async function getStudent(req, res) {
   try {
-    const { id } = req.params; 
-    const user = await User.findByPk(id); 
+    const { id } = req.params;
+    const user = await User.findById(id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -105,36 +106,24 @@ async function getStudent(req, res) {
 
 async function updateUser(req, res) {
   try {
-    const { id } = req.params; 
-    const { full_name, username, major, password, photo, birth_date, phone_number } = req.body; 
+    const { id } = req.params;
+    const { full_name, username, major, password, photo, birth_date, phone_number } = req.body;
 
-    const user = await User.findOne({ where: { id } });
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     if (password) {
-      user.password = await bcrypt.hash(password, 10); 
+      user.password = await bcrypt.hash(password, 10);
     }
-    if (full_name) {
-      user.full_name = full_name;
-    }
-    if (username) {
-      user.username = username;
-    }
-    if (major) {
-      user.major = major;
-    }
-    if (birth_date !== undefined) {
-      user.birth_date = birth_date;
-    }
-    if (phone_number !== undefined) {
-      user.phone_number = phone_number;
-    }
-    if (photo) {
-      user.photo = photo;
-    }
-    
+    if (full_name) user.full_name = full_name;
+    if (username) user.username = username;
+    if (major) user.major = major;
+    if (birth_date !== undefined) user.birth_date = birth_date;
+    if (phone_number !== undefined) user.phone_number = phone_number;
+    if (photo) user.photo = photo;
+
     await user.save();
 
     res.status(200).json({ message: "User updated successfully", user });
@@ -146,13 +135,13 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
   try {
-    const { id } = req.params; 
-    const user = await User.findByPk(id); 
+    const { id } = req.params;
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await user.destroy(); 
+    await user.remove();
 
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
@@ -164,7 +153,7 @@ async function deleteUser(req, res) {
 async function getCourse(req, res) {
   try {
     const { course_name } = req.params;
-    const course = await Course.findOne({where: { course_name: course_name } });
+    const course = await Course.findOne({ course_name });
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
@@ -184,13 +173,10 @@ async function getCourse(req, res) {
 
 async function getAllMajors(req, res) {
   try {
-    const majors = await User.findAll({
-      attributes: ['major'],
-      group: ['major']
-    });
+    // گرفتن لیست یکتا رشته‌ها
+    const majors = await User.distinct('major');
 
-    const majorList = majors.map(user => user.major);
-    res.status(200).json({ majors: majorList });
+    res.status(200).json({ majors });
   } catch (error) {
     console.error("Error fetching majors:", error);
     res.status(500).json({ message: "Server error" });
@@ -205,20 +191,25 @@ async function submitForm(req, res) {
     let exists = true;
     do {
       code = generateTrackingCode();
-      exists = await Form.findOne({ where: { tracking_code: code } });
+      exists = await Form.findOne({ tracking_code: code });
     } while (exists);
 
     const status = "pending";
 
-    const newForm = await Form.create({ title: title, tracking_code: code, type: type, status: status, content: content, user_id: user_id });
+    const newForm = new Form({
+      title,
+      tracking_code: code,
+      type,
+      status,
+      content,
+      user_id
+    });
+
+    await newForm.save();
+
     res.status(201).json({ message: "Form submitted successfully", form: newForm });
   } catch (error) {
     console.error("❌ Error submitting form:", error);
-    if (error.name === 'SequelizeValidationError') {
-      // برقرا کنید خطاهای مدل رو ببینید
-      console.error(error.errors.map(e => e.message));
-      return res.status(400).json({ message: error.errors.map(e => e.message) });
-    }
     res.status(500).json({ message: "Server error", detail: error.message });
   }
 }
@@ -230,10 +221,7 @@ async function getFormsForUser(req, res) {
       return res.status(400).json({ message: 'user_id is required' });
     }
 
-    const forms = await Form.findAll({
-      where: { user_id },
-      order: [['createdAt', 'DESC']]
-    });
+    const forms = await Form.find({ user_id }).sort({ createdAt: -1 });
 
     return res.json({ forms });
   } catch (err) {
@@ -244,24 +232,28 @@ async function getFormsForUser(req, res) {
 
 async function updateForm(req, res) {
   try {
-    const formId  = req.params.id;
+    const formId = req.params.id;
     const { title, type, content, user_id } = req.body;
-    if (!title || !type || !content || !user_id) {
-      return res.status(400).json({ message: 'فیلدهای title, type, content و user_id الزامی‌اند.' });
-    }
-    const form = await Form.findOne({ where: { id: formId, user_id } });
+
+    const form = await Form.findOne({
+      _id: formId,
+      user_id: user_id
+    });
+
     if (!form) {
-      return res.status(404).json({ message: 'فرم پیدا نشد یا متعلق به شما نیست.' });
+      return res.status(404).json({ message: 'Form not found or not owned by you.' });
     }
+
     form.title   = title;
     form.type    = type;
     form.content = content;
     await form.save();
 
-    return res.json({ message: 'فرم با موفقیت ویرایش شد.', form });
+    return res.json({ message: 'Form updated successfully.', form });
+
   } catch (err) {
     console.error('Error updating form:', err);
-    return res.status(500).json({ message: 'خطای سروری' });
+    return res.status(500).json({ message: 'server error' });
   }
 }
 
@@ -272,8 +264,8 @@ async function deleteForm(req, res) {
     if (!user_id) {
       return res.status(400).json({ message: 'user_id is required' });
     }
-    const deleted = await Form.destroy({ where: { id: formId, user_id } });
-    if (!deleted) {
+    const deleted = await Form.deleteOne({ _id: formId, user_id });
+    if (deleted.deletedCount === 0) {
       return res.status(404).json({ message: 'form not found' });
     }
     return res.json({ message: 'form deleted successfully' });
@@ -286,11 +278,11 @@ async function deleteForm(req, res) {
 async function getFormById(req, res) {
   const { id } = req.params;
   try {
-    const form = await Form.findByPk(id);
+    const form = await Form.findById(id);
     if (!form) {
       return res.status(404).json({ message: 'form not found' });
     }
-    return res.json(form); // ارسال اطلاعات فرم به کلاینت
+    return res.json(form);
   } catch (err) {
     console.error('Error fetching form:', err);
     return res.status(500).json({ message: 'server error fetching form' });
