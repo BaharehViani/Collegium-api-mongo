@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   username: {
-    type: Number, // یا String، هر چی که میخوای
+    type: Number,
     unique: true,
     required: true,
   },
@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 }, {
-  timestamps: true,  // اگر دوست داری createdAt و updatedAt داشته باشی
+  timestamps: true, 
 });
 
 const User = mongoose.model('User', userSchema);

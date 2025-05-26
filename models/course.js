@@ -18,7 +18,7 @@ const courseSchema = new mongoose.Schema({
     required: false,
   }
 }, {
-  timestamps: true,  // اگر دوست داری createdAt و updatedAt داشته باشی
+  timestamps: true, 
 });
 
 

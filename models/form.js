@@ -24,12 +24,12 @@ const formSchema = new Schema({
     required: true,
   },
   user_id: {
-    type: Schema.Types.ObjectId,  // نوع ObjectId برای رفرنس به User
+    type: Schema.Types.ObjectId,  
     required: true,
-    ref: 'User',   // رفرنس به مدل User
+    ref: 'User',   
   }
 }, {
-  timestamps: true,  // اگر دوست داری createdAt و updatedAt داشته باشی
+  timestamps: true, 
 });
 
 const Form = mongoose.model('Form', formSchema);
