@@ -1,5 +1,9 @@
-const { User, Course } = require('../models');
+const { User, Course, Form } = require('../models');
 const bcrypt = require('bcrypt');
+
+function generateTrackingCode() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
 
 async function registerUser(req, res) {
   try {
@@ -193,6 +197,106 @@ async function getAllMajors(req, res) {
   }
 }
 
+async function submitForm(req, res) {
+  try {
+    const { title, type, content, user_id } = req.body;
+
+    let code;
+    let exists = true;
+    do {
+      code = generateTrackingCode();
+      exists = await Form.findOne({ where: { tracking_code: code } });
+    } while (exists);
+
+    const status = "pending";
+
+    const newForm = await Form.create({ title: title, tracking_code: code, type: type, status: status, content: content, user_id: user_id });
+    res.status(201).json({ message: "Form submitted successfully", form: newForm });
+  } catch (error) {
+    console.error("❌ Error submitting form:", error);
+    if (error.name === 'SequelizeValidationError') {
+      // برقرا کنید خطاهای مدل رو ببینید
+      console.error(error.errors.map(e => e.message));
+      return res.status(400).json({ message: error.errors.map(e => e.message) });
+    }
+    res.status(500).json({ message: "Server error", detail: error.message });
+  }
+}
+
+async function getFormsForUser(req, res) {
+  try {
+    const user_id = req.params.user_id;
+    if (!user_id) {
+      return res.status(400).json({ message: 'user_id is required' });
+    }
+
+    const forms = await Form.findAll({
+      where: { user_id },
+      order: [['createdAt', 'DESC']]
+    });
+
+    return res.json({ forms });
+  } catch (err) {
+    console.error('Error fetching forms:', err);
+    return res.status(500).json({ message: 'server error' });
+  }
+}
+
+async function updateForm(req, res) {
+  try {
+    const formId  = req.params.id;
+    const { title, type, content, user_id } = req.body;
+    if (!title || !type || !content || !user_id) {
+      return res.status(400).json({ message: 'فیلدهای title, type, content و user_id الزامی‌اند.' });
+    }
+    const form = await Form.findOne({ where: { id: formId, user_id } });
+    if (!form) {
+      return res.status(404).json({ message: 'فرم پیدا نشد یا متعلق به شما نیست.' });
+    }
+    form.title   = title;
+    form.type    = type;
+    form.content = content;
+    await form.save();
+
+    return res.json({ message: 'فرم با موفقیت ویرایش شد.', form });
+  } catch (err) {
+    console.error('Error updating form:', err);
+    return res.status(500).json({ message: 'خطای سروری' });
+  }
+}
+
+async function deleteForm(req, res) {
+  try {
+    const formId = req.params.id;
+    const { user_id } = req.body;
+    if (!user_id) {
+      return res.status(400).json({ message: 'user_id is required' });
+    }
+    const deleted = await Form.destroy({ where: { id: formId, user_id } });
+    if (!deleted) {
+      return res.status(404).json({ message: 'form not found' });
+    }
+    return res.json({ message: 'form deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting form:', err);
+    return res.status(500).json({ message: 'server error' });
+  }
+}
+
+async function getFormById(req, res) {
+  const { id } = req.params;
+  try {
+    const form = await Form.findByPk(id);
+    if (!form) {
+      return res.status(404).json({ message: 'form not found' });
+    }
+    return res.json(form); // ارسال اطلاعات فرم به کلاینت
+  } catch (err) {
+    console.error('Error fetching form:', err);
+    return res.status(500).json({ message: 'server error fetching form' });
+  }
+}
+
 module.exports = {
   registerUser,
   getAllStudents,
@@ -201,5 +305,10 @@ module.exports = {
   deleteUser,
   loginUser,
   getCourse,
-  getAllMajors
+  getAllMajors,
+  submitForm,
+  getFormsForUser,
+  updateForm,
+  deleteForm,
+  getFormById
 };
