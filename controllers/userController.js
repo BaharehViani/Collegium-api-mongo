@@ -289,6 +289,53 @@ async function getFormById(req, res) {
   }
 }
 
+async function getPendingForms(req, res) {
+  try {
+    const forms = await Form.find({ status: 'pending' })
+      .sort({ createdAt: -1 })
+      .populate('user_id', 'full_name');
+
+    const result = forms.map(form => ({
+      _id: form._id,
+      title: form.title,
+      type: form.type,
+      tracking_code: form.tracking_code,
+      content: form.content,
+      createdAt: form.createdAt,
+      username: form.user_id.full_name || 'Unknown'
+    }));
+
+    res.json({ forms: result });
+  } catch (err) {
+    console.error('Error fetching forms:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+async function updateFormStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const form = await Form.findById(id);
+    if (!form) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+
+    form.status = status;
+    await form.save();
+
+    res.json({ message: 'Status updated successfully.' });
+  } catch (err) {
+    console.error('Error updating status:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 module.exports = {
   registerUser,
   getAllStudents,
@@ -302,5 +349,7 @@ module.exports = {
   getFormsForUser,
   updateForm,
   deleteForm,
-  getFormById
+  getFormById,
+  getPendingForms,
+  updateFormStatus,
 };
