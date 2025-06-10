@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { registerUser, getAllStudents, getStudent, updateUser, deleteUser, loginUser, getCourse, getAllMajors, submitForm,
     getFormsForUser, updateForm, deleteForm, getFormById, getPendingForms, updateFormStatus, 
-    reserveMeal, cancelMeal, getReservationsForDay} = require('../controllers/userController');
+    reserveMeal, cancelMeal, getReservationsForDay, getReservationsReport} = require('../controllers/userController');
 
 router.post('/reservation', reserveMeal);
 router.delete('/reservation/:id', cancelMeal);
 router.get('/reservations', getReservationsForDay);
+router.get('/reservations-report', getReservationsReport);
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);

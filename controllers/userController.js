@@ -373,27 +373,57 @@ async function cancelMeal(req, res) {
 }
 
 async function getReservationsForDay(req, res) {
-  // try {
-  //   const { date } = req.params;
-  //   const start = new Date(date);
-  //   start.setHours(0,0,0,0);
-  //   const end = new Date(date);
-  //   end.setHours(23,59,59,999);
-  //   const reservations = await Meal.find({
-  //     reservation_date: { $gte: start, $lte: end }
-  //   });
-  //   res.json(reservations);
-  // } catch (err) {
-  //   console.error('Error fetching reservations:', err);
-  //   res.status(500).json({ message: 'Server error' });
-  // }
   const { user_id, reservation_date } = req.query;
   try {
     const reservations = await Meal.find({ user_id, reservation_date });
-    res.json(reservations); // هر رکورد شامل meal_name و _id
+    res.json(reservations);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+}
+
+async function getReservationsReport(req, res) {
+  try {
+    const { date, meal_time, restaurant_id } = req.query;
+
+    if (!date || !meal_time) {
+      return res.status(400).json({ error: "Missing required parameters" });
+    }
+
+    const matchStage = {
+      reservation_date: {
+        $gte: new Date(date),
+        $lt: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000),
+      },
+      meal_type: { $regex: new RegExp(`^${meal_time}$`, "i") },
+    };
+
+
+    if (restaurant_id && restaurant_id !== "All") {
+      matchStage.cafeteria_name = restaurant_id;
+    }
+
+    const report = await Meal.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$meal_name",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    const formatted = report.map(item => ({
+      meal_name: item._id,
+      count: item.count,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Error in getReservationsReport:", err);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
@@ -416,4 +446,5 @@ module.exports = {
   reserveMeal,
   cancelMeal,
   getReservationsForDay,
+  getReservationsReport,
 };
