@@ -1,4 +1,4 @@
-const { User, Course, Form } = require('../models');
+const { User, Course, Form, Meal } = require('../models');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 
@@ -336,6 +336,67 @@ async function updateFormStatus(req, res) {
   }
 }
 
+async function reserveMeal(req, res) {
+  try {
+    const { meal_name, meal_type, cafeteria_name, reservation_date, user_id } = req.body;
+    const newReserve = new Meal({
+      meal_name,
+      meal_type,
+      cafeteria_name,
+      reservation_date: new Date(reservation_date),
+      user_id
+    });
+    await newReserve.save();
+    res.status(201).json(newReserve);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+async function cancelMeal(req, res) {
+  try {
+    const { id } = req.params; 
+    const { user_id } = req.body;
+
+    const result = await Meal.deleteOne({ _id: id, user_id });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Reservation not found or not owned by user' });
+    }
+
+    res.json({ message: 'Reservation cancelled' });
+  } catch (err) {
+    console.error("CancelMeal Error:", err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+async function getReservationsForDay(req, res) {
+  // try {
+  //   const { date } = req.params;
+  //   const start = new Date(date);
+  //   start.setHours(0,0,0,0);
+  //   const end = new Date(date);
+  //   end.setHours(23,59,59,999);
+  //   const reservations = await Meal.find({
+  //     reservation_date: { $gte: start, $lte: end }
+  //   });
+  //   res.json(reservations);
+  // } catch (err) {
+  //   console.error('Error fetching reservations:', err);
+  //   res.status(500).json({ message: 'Server error' });
+  // }
+  const { user_id, reservation_date } = req.query;
+  try {
+    const reservations = await Meal.find({ user_id, reservation_date });
+    res.json(reservations); // هر رکورد شامل meal_name و _id
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 module.exports = {
   registerUser,
   getAllStudents,
@@ -352,4 +413,7 @@ module.exports = {
   getFormById,
   getPendingForms,
   updateFormStatus,
+  reserveMeal,
+  cancelMeal,
+  getReservationsForDay,
 };
