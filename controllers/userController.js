@@ -141,7 +141,7 @@ async function deleteUser(req, res) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await user.remove();
+    await User.findByIdAndDelete(id);
 
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
