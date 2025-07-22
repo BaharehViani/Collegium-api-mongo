@@ -2,17 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-ARG PORT
-ARG MONGO_URI
-
 COPY package*.json ./
 RUN npm install
 
 COPY . .
 
-RUN echo "PORT=${PORT}\n\
-MONGO_URI=${MONGO_URI}" > /app/.env
-
-EXPOSE ${PORT}
+EXPOSE 5000
 
 CMD ["npm", "start"]
