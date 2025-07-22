@@ -28,6 +28,7 @@ services:
       dockerfile: Dockerfile.nginx
     ports:
       - "17005:80"
+      - "443:443"
     networks:
       - collegium-network
     depends_on:
