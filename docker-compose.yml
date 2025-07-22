@@ -1,0 +1,48 @@
+name: collegium-api
+
+networks:
+  collegium-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
+
+services:
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+      args:
+        PORT: 5000
+        MONGO_URI: mongodb://root:fh548HAerNb8476@db:27017/collegium  
+    networks:
+      - collegium-network
+    restart: always
+    depends_on:
+      - db
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "17005:80"
+    networks:
+      - collegium-network
+    depends_on:
+      - node    
+
+  db:
+    image: mongo
+    networks:
+      - collegium-network
+    ports:
+      - "17006:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: fh548HAerNb8476
+      MONGO_INITDB_DATABASE: collegium
