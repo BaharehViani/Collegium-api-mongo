@@ -3,7 +3,7 @@ FROM nginx:stable-alpine AS base
 RUN printf "\
     server {\n\
         listen 80;\n\
-        listen 443 ssl;\n\
+        listen 8443 ssl;\n\
         ssl_certificate /etc/nginx/ssl/yetir.kojiberi.com.crt;\n\
         ssl_certificate_key /etc/nginx/ssl/yetir.kojiberi.com.key;\n\
         server_name collegiumapi.kojiberi.com;\n\
