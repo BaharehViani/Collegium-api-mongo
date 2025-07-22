@@ -1,14 +1,11 @@
 FROM nginx:stable-alpine AS base
 
-COPY ./ssl/collegiumapi.kojiberi.com.crt /etc/nginx/ssl/collegiumapi.kojiberi.com.crt
-COPY ./ssl/collegiumapi.kojiberi.com.key /etc/nginx/ssl/collegiumapi.kojiberi.com.key
-
 RUN printf "\
     server {\n\
         listen 80;\n\
         listen 443 ssl;\n\
-        ssl_certificate /etc/nginx/ssl/collegiumapi.kojiberi.com.crt;\n\
-        ssl_certificate_key /etc/nginx/ssl/collegiumapi.kojiberi.com.key;\n\
+        ssl_certificate /etc/nginx/ssl/yetir.kojiberi.com.crt;\n\
+        ssl_certificate_key /etc/nginx/ssl/yetir.kojiberi.com.key;\n\
         server_name collegiumapi.kojiberi.com;\n\
         error_log /var/log/nginx/error.log;\n\
         access_log /var/log/nginx/access.log;\n\
