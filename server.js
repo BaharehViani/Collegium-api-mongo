@@ -22,8 +22,8 @@ app.get('/', (req, res) => {
 
 mongoose.connection.once('open', () => {
   console.log('✅ MongoDB connection established');
-  app.listen(5000, () => {
-    console.log(`✅ Server is running on http://localhost:5000`);
+  app.listen(process.env.PORT, () => {
+    console.log(`✅ Server is running on http://localhost:${process.env.PORT}`);
   });
 });
 
